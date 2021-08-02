@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "636721277692",
+    "project_id": "walli-clone",
+    "storage_bucket": "walli-clone.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636721277692:android:5f8244a913c21f06f8c579",
+        "android_client_info": {
+          "package_name": "app.wallhunt"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "636721277692-s7k7qf8lgho88fdeum3bsshgdmq00kn2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYE9Y6atxpwq8Cqr7BwgNBZhqGieqUvXA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "636721277692-s7k7qf8lgho88fdeum3bsshgdmq00kn2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636721277692:android:55a8ce6b094e2b29f8c579",
+        "android_client_info": {
+          "package_name": "com.app.walli_clone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "636721277692-s7k7qf8lgho88fdeum3bsshgdmq00kn2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYE9Y6atxpwq8Cqr7BwgNBZhqGieqUvXA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "636721277692-s7k7qf8lgho88fdeum3bsshgdmq00kn2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
