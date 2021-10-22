@@ -35,7 +35,8 @@ class WallsListBloc extends BaseBloc {
     WallsRequest request = WallsRequest();
     request.page = page;
     request.perPage = defaultFetchLimit;
-    WallsResponse response = await repository.wallsApi(request: request, apiType: apiType);
+    WallsResponse response =
+        await repository.wallsApi(request: request, apiType: apiType);
     if (response.status == 200) {
       if (page == 0) {
         _wallsList.clear();

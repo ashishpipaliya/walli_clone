@@ -4,7 +4,6 @@ import 'package:after_layout/after_layout.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:wall_hunt/bloc/wallpaper_list_bloc.dart';
 import 'package:wall_hunt/control/pull_to_refresh_list_view.dart';
 import 'package:wall_hunt/layout/walli/open_image_detail.dart';
@@ -30,9 +29,6 @@ class _WallsScreenState extends State<WallsScreen> with AfterLayoutMixin {
   final WallsListBloc _bloc = WallsListBloc();
   StreamSubscription<WallsResponse> _wallsSubscription;
 
-  RewardedAd _rewardedAd;
-  bool _isRewardedAdReady = false;
-
   @override
   void initState() {
     /// Listen for Subscription
@@ -46,17 +42,6 @@ class _WallsScreenState extends State<WallsScreen> with AfterLayoutMixin {
       }
     });
     _scrollController.addListener(_onScroll);
-
-    // _loadRewardedAd();
-    // Timer(Duration(seconds: 30), () {
-    //   if (_isRewardedAdReady) {
-    //     _rewardedAd?.show(onUserEarnedReward: (ad, reward) {
-    //
-    //     },);
-    //   } else {
-    //     print('ad is not ready');
-    //   }
-    // });
 
     super.initState();
   }
@@ -90,7 +75,8 @@ class _WallsScreenState extends State<WallsScreen> with AfterLayoutMixin {
           ),
         ),
         child: PullToRefreshListView(
-          physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          physics:
+              BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           onRefresh: () async => _callWallpaperListApi(page: 1),
           controller: _scrollController,
           itemCount: _bloc.wallsList.length ?? 0,
@@ -109,11 +95,14 @@ class _WallsScreenState extends State<WallsScreen> with AfterLayoutMixin {
   }
 
   void _onScroll() {
-    if (_scrollController.position.maxScrollExtent != _scrollController.offset) return;
+    if (_scrollController.position.maxScrollExtent !=
+        _scrollController.offset) {
+      return;
+    }
     if (!_bloc.isLoadMore) return;
     if (_bloc.isLoadMorePending) return;
     _bloc.isLoadMorePending = true;
-    int cPage = (_bloc.wallsList.length ~/ _bloc.defaultFetchLimit);
+    int cPage = (_bloc.wallsList.length / _bloc.defaultFetchLimit).ceil();
     _callWallpaperListApi(page: cPage + 1);
   }
 
@@ -139,36 +128,4 @@ class _WallsScreenState extends State<WallsScreen> with AfterLayoutMixin {
       ),
     );
   }
-
-// void _loadRewardedAd() {
-//   RewardedAd.load(
-//     adUnitId: AdHelper.rewardedAdUnitId,
-//     request: AdRequest(),
-//     rewardedAdLoadCallback: RewardedAdLoadCallback(
-//       onAdLoaded: (ad) {
-//         this._rewardedAd = ad;
-//
-//         ad.fullScreenContentCallback = FullScreenContentCallback(
-//           onAdDismissedFullScreenContent: (ad) {
-//             setState(() {
-//               _isRewardedAdReady = false;
-//             });
-//             _loadRewardedAd();
-//           },
-//         );
-//
-//         setState(() {
-//           _isRewardedAdReady = true;
-//         });
-//       },
-//       onAdFailedToLoad: (err) {
-//         print('Failed to load a rewarded ad: ${err.message}');
-//         setState(() {
-//           _isRewardedAdReady = false;
-//         });
-//       },
-//     ),
-//   );
-// }
-
 }

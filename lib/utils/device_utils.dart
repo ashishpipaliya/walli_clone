@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:wall_hunt/utils/firebase_cloud_messaging.dart';
-import 'logger.dart';
 
 class DeviceUtil {
   factory DeviceUtil() {
@@ -48,7 +47,7 @@ class DeviceUtil {
   //   _buildNumber = packageInfo.buildNumber;
   // }
 
- static Map<String, dynamic> generateDeviceDTO() {
+  static Map<String, dynamic> generateDeviceDTO() {
     // "prDeviceDTO": {
     // "deviceUUID": "string",
     // "latitude": 0,
@@ -65,6 +64,4 @@ class DeviceUtil {
     deviceDTO['deviceToken'] = FireBaseCloudMessagingWrapper().fcmToken ?? '';
     return deviceDTO;
   }
-
-
 }

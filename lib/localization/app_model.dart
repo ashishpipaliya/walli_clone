@@ -4,13 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../service/reachability.dart';
 import '../utils/channel/platform_channel.dart';
-import '../utils/device_utils.dart';
 import '../utils/firebase_cloud_messaging.dart';
 import '../utils/logger.dart';
 
-
 class AppModel with ChangeNotifier {
-
   bool isLoading = true;
   bool isUserLogin = true;
   //String pastLanguageOfApp;
@@ -55,18 +52,23 @@ class AppModel with ChangeNotifier {
     notifyListeners();
   }
 
-
   List<Locale> get supportedLocales => [enLocale, arLocale];
 
   void changeLanguage({String languageCode}) async {
     Logger().i("Current Local changed with language code $languageCode");
 
-    if (languageCode.toLowerCase() == 'en') { _appLocale = enLocale; }
-    if (languageCode.toLowerCase() == 'ar') { _appLocale = arLocale; }
-    else { _appLocale = enLocale; }
+    if (languageCode.toLowerCase() == 'en') {
+      _appLocale = enLocale;
+    }
+    if (languageCode.toLowerCase() == 'ar') {
+      _appLocale = arLocale;
+    } else {
+      _appLocale = enLocale;
+    }
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('CurrentDeviceLanguage', _appLocale.languageCode.toLowerCase());
+    prefs.setString(
+        'CurrentDeviceLanguage', _appLocale.languageCode.toLowerCase());
     notifyListeners();
   }
 }

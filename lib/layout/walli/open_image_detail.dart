@@ -8,12 +8,10 @@ import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path/path.dart' as Path;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wall_hunt/bloc/open_image_details_bloc.dart';
-import 'package:wall_hunt/service/ad_helper.dart';
 import 'package:wall_hunt/service/all_response.dart';
 import 'package:wall_hunt/service/response/model/featured_model.dart';
 import 'package:wall_hunt/utils/app_color.dart';
@@ -31,31 +29,18 @@ class OpenImageDetail extends StatefulWidget {
   _OpenImageDetailState createState() => _OpenImageDetailState();
 }
 
-class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin {
+class _OpenImageDetailState extends State<OpenImageDetail>
+    with AfterLayoutMixin {
   final GlobalKey<ScaffoldState> _key = GlobalKey<ScaffoldState>();
   OpenImageDetailsBloc _bloc = OpenImageDetailsBloc();
 
   StreamSubscription<RectangleWallResponse> _wall;
 
-// TODO move this in bloc
   Stream<String> progressString;
   String res = 'Downloading..';
   bool downloading = false;
 
   //************
-
-  BannerAd _bannerAd;
-  bool _isBannerAdReady = false;
-
-  InterstitialAd _interstitialAd1;
-  InterstitialAd _interstitialAd2;
-  InterstitialAd _interstitialAd3;
-  bool _isInterstitialAd1Ready = false;
-  bool _isInterstitialAd2Ready = false;
-  bool _isInterstitialAd3Ready = false;
-
-  RewardedAd _rewardedAd;
-  bool _isRewardedAdReady = false;
 
   @override
   void initState() {
@@ -66,16 +51,8 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
       }
     });
 
-    _loadBannerAd2();
-    _loadInterstitialAd1();
     // _loadRewardedAd();
-    Timer(Duration(seconds: 5), () {
-      if (_isInterstitialAd1Ready) {
-        _interstitialAd1?.show();
-      } else {
-        print('ad is not ready');
-      }
-    });
+
     super.initState();
   }
 
@@ -83,11 +60,6 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
   void dispose() {
     _wall?.cancel();
     _bloc.dispose();
-    _bannerAd?.dispose();
-    _interstitialAd1?.dispose();
-    _interstitialAd2?.dispose();
-    _interstitialAd3?.dispose();
-    _rewardedAd.dispose();
     super.dispose();
   }
 
@@ -119,13 +91,15 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                  padding:
+                      EdgeInsets.only(top: MediaQuery.of(context).padding.top),
                   child: IconButton(
                     icon: Stack(
                       alignment: Alignment.center,
                       children: [
                         Container(
-                          decoration: BoxDecoration(color: Colors.black38, shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                              color: Colors.black38, shape: BoxShape.circle),
                           width: UIUtils().getProportionalWidth(25),
                           height: UIUtils().getProportionalWidth(25),
                         ),
@@ -183,7 +157,8 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
                         onPressed: _handleDownloadButtonEvent,
                         child: Text(
                           "Download",
-                          style: UIUtils().getTextStyle(color: AppColor.whiteColor, fontSize: 15),
+                          style: UIUtils().getTextStyle(
+                              color: AppColor.whiteColor, fontSize: 15),
                         ),
                       ),
                     ),
@@ -198,7 +173,8 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
                         onPressed: _setWallPaperOpenBottomSheet,
                         child: Text(
                           "Set Wallpaper",
-                          style: UIUtils().getTextStyle(color: AppColor.whiteColor, fontSize: 15),
+                          style: UIUtils().getTextStyle(
+                              color: AppColor.whiteColor, fontSize: 15),
                         ),
                       ),
                     ),
@@ -207,15 +183,6 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
               ),
             ),
 
-            if (_isBannerAdReady)
-              Align(
-                alignment: Alignment.topCenter,
-                child: Container(
-                  width: _bannerAd.size.width.toDouble(),
-                  height: _bannerAd.size.height.toDouble(),
-                  child: AdWidget(ad: _bannerAd),
-                ),
-              ),
             Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: UIUtils().getProportionalWidth(18),
@@ -272,7 +239,8 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
               height: 0,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: UIUtils().getProportionalWidth(15)),
+              padding: EdgeInsets.symmetric(
+                  horizontal: UIUtils().getProportionalWidth(15)),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -302,7 +270,10 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
                       ),
                       Text(
                         widget.wallsModel.location,
-                        style: UIUtils().getTextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: AppColor.orGreyColor),
+                        style: UIUtils().getTextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: AppColor.orGreyColor),
                       )
                     ],
                   )
@@ -332,11 +303,6 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
 
   _handleBackEvent() {
     if (Navigator.canPop(context)) Navigator.pop(context);
-    if (_isRewardedAdReady) {
-      _rewardedAd?.show(
-        onUserEarnedReward: (ad, reward) {},
-      );
-    }
   }
 
   _handleDownloadButtonEvent() async {
@@ -390,7 +356,8 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
                             child: FancyShimmerImage(
-                              imageUrl: widget.wallsModel?.downloadLinks?.original,
+                              imageUrl:
+                                  widget.wallsModel?.downloadLinks?.original,
                               boxFit: BoxFit.fitHeight,
                             ),
                           ),
@@ -406,7 +373,8 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: FancyShimmerImage(
-                                imageUrl: widget.wallsModel?.downloadLinks?.original,
+                                imageUrl:
+                                    widget.wallsModel?.downloadLinks?.original,
                                 boxFit: BoxFit.contain,
                                 shimmerBaseColor: Colors.transparent,
                                 shimmerBackColor: Colors.transparent,
@@ -436,47 +404,47 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
   }
 
   _downloadSquareWall() async {
-    _loadInterstitialAd2();
     await PlatformChannel().checkForPermission(Permission.storage);
     var response = await Dio().get(
       widget.wallsModel?.downloadLinks?.original,
       options: Options(responseType: ResponseType.bytes),
     );
-    String imageName = 'sq_' + Path.basename(response.requestOptions.path.split('.jpg')[0]);
+    String imageName =
+        'sq_' + Path.basename(response.requestOptions.path.split('.jpg')[0]);
     print(imageName);
-    var result = await ImageGallerySaver.saveImage(Uint8List.fromList(response.data), quality: 100, name: imageName);
+    var result = await ImageGallerySaver.saveImage(
+        Uint8List.fromList(response.data),
+        quality: 100,
+        name: imageName);
     print(result);
     Navigator.pop(context);
-    Utils.showSnackBar(_key, result['isSuccess'] == true ? 'Image Saved To Gallery' : 'Please grant storage permission to save wallpapers');
-    Timer(Duration(seconds: 1), () {
-      if (_isInterstitialAd2Ready) {
-        _interstitialAd2?.show();
-      } else {
-        print('ad is not ready');
-      }
-    });
+    Utils.showSnackBar(
+        _key,
+        result['isSuccess'] == true
+            ? 'Image Saved To Gallery'
+            : 'Please grant storage permission to save wallpapers');
   }
 
   _downloadRectangleWall() async {
-    _loadInterstitialAd2();
     await PlatformChannel().checkForPermission(Permission.storage);
     var response = await Dio().get(
       _bloc.wallpaper?.image,
       options: Options(responseType: ResponseType.bytes),
     );
-    String imageName = 'rect_' + Path.basename(response.requestOptions.path.split('.jpg')[0]);
+    String imageName =
+        'rect_' + Path.basename(response.requestOptions.path.split('.jpg')[0]);
     print(imageName);
-    var result = await ImageGallerySaver.saveImage(Uint8List.fromList(response.data), quality: 100, name: imageName);
+    var result = await ImageGallerySaver.saveImage(
+        Uint8List.fromList(response.data),
+        quality: 100,
+        name: imageName);
     print(result);
     Navigator.pop(context);
-    Utils.showSnackBar(_key, result['isSuccess'] == true ? 'Image Saved To Gallery' : 'Please grant storage permission to save wallpapers');
-    Timer(Duration(seconds: 1), () {
-      if (_isInterstitialAd2Ready) {
-        _interstitialAd2?.show();
-      } else {
-        print('ad is not ready');
-      }
-    });
+    Utils.showSnackBar(
+        _key,
+        result['isSuccess'] == true
+            ? 'Image Saved To Gallery'
+            : 'Please grant storage permission to save wallpapers');
   }
 
   _setWallPaperOpenBottomSheet() {
@@ -497,7 +465,6 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
   }
 
   _setWallpaperEvent({@required WallpaperType wallpaperType}) async {
-    _loadInterstitialAd3();
     progressString = Wallpaper.ImageDownloadProgress(_bloc.wallpaper?.image);
     progressString.listen(
       (data) async {
@@ -523,13 +490,6 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
         });
 
         Utils.showSnackBar(_key, "Wallpaper successfully set");
-        Timer(Duration(seconds: 1), () {
-          if (_isInterstitialAd3Ready) {
-            _interstitialAd3?.show();
-          } else {
-            print('ad is not ready');
-          }
-        });
       },
       onError: (error) {
         setState(() {
@@ -539,128 +499,6 @@ class _OpenImageDetailState extends State<OpenImageDetail> with AfterLayoutMixin
       },
     );
   }
-
-  void _loadBannerAd2() async {
-    _bannerAd = BannerAd(
-      adUnitId: AdHelper.bannerAdUnitId2,
-      request: AdRequest(),
-      size: AdSize.banner,
-      listener: BannerAdListener(
-        onAdLoaded: (_) {
-          setState(() {
-            _isBannerAdReady = true;
-          });
-        },
-        onAdFailedToLoad: (ad, err) {
-          print('Failed to load a banner ad: ${err.message}');
-          _isBannerAdReady = false;
-          ad.dispose();
-        },
-      ),
-    );
-    _bannerAd.load();
-  }
-
-  void _loadInterstitialAd1() {
-    InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId1,
-      request: AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          this._interstitialAd1 = ad;
-
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              print('ad dismissed');
-            },
-          );
-          _isInterstitialAd2Ready = true;
-        },
-        onAdFailedToLoad: (err) {
-          print('Failed to load an interstitial ad: ${err.message}');
-          _isInterstitialAd1Ready = false;
-        },
-      ),
-    );
-  }
-
-  void _loadInterstitialAd2() {
-    InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId2,
-      request: AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          this._interstitialAd2 = ad;
-
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              print('ad dismissed');
-            },
-          );
-          _isInterstitialAd2Ready = true;
-        },
-        onAdFailedToLoad: (err) {
-          print('Failed to load an interstitial ad: ${err.message}');
-          _isInterstitialAd2Ready = false;
-        },
-      ),
-    );
-  }
-
-  void _loadInterstitialAd3() {
-    InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId3,
-      request: AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          this._interstitialAd3 = ad;
-
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              print('ad dismissed');
-            },
-          );
-          _isInterstitialAd3Ready = true;
-        },
-        onAdFailedToLoad: (err) {
-          print('Failed to load an interstitial ad: ${err.message}');
-          _isInterstitialAd3Ready = false;
-        },
-      ),
-    );
-  }
-
-
-  // void _loadRewardedAd() {
-  //   RewardedAd.load(
-  //     adUnitId: AdHelper.rewardedAdUnitId,
-  //     request: AdRequest(),
-  //     rewardedAdLoadCallback: RewardedAdLoadCallback(
-  //       onAdLoaded: (ad) {
-  //         this._rewardedAd = ad;
-  //
-  //         ad.fullScreenContentCallback = FullScreenContentCallback(
-  //           onAdDismissedFullScreenContent: (ad) {
-  //             setState(() {
-  //               _isRewardedAdReady = false;
-  //             });
-  //             _loadRewardedAd();
-  //           },
-  //         );
-  //
-  //         setState(() {
-  //           _isRewardedAdReady = true;
-  //         });
-  //       },
-  //       onAdFailedToLoad: (err) {
-  //         print('Failed to load a rewarded ad: ${err.message}');
-  //         setState(() {
-  //           _isRewardedAdReady = false;
-  //         });
-  //       },
-  //     ),
-  //   );
-  // }
 }
 
 enum WallpaperType {

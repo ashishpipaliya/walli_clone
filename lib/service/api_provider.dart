@@ -13,7 +13,6 @@ import 'package:wall_hunt/service/response/model/rectangle_wallpaper_model.dart'
 import '../localization/localization.dart';
 import '../utils/logger.dart';
 import '../utils/navigation/navigation_service.dart';
-import '../utils/utils.dart';
 import 'all_request.dart';
 import 'all_response.dart';
 import 'api_constant.dart';
@@ -43,22 +42,36 @@ class ApiProvider {
     Logger().v("Response Status code:: ${response.statusCode}");
     Logger().v("response body :: $jsonResponse");
 
-    final message = (jsonResponse is Map) ? jsonResponse[ResponseKeys.kMessage] ?? (jsonResponse[ResponseKeys.kTitle] ?? '') : '';
-    final status = (jsonResponse is Map) ? jsonResponse[ResponseKeys.kStatus] ?? response.statusCode : response.statusCode;
-    final data = (jsonResponse is Map) ? jsonResponse[ResponseKeys.kData] : null;
+    final message = (jsonResponse is Map)
+        ? jsonResponse[ResponseKeys.kMessage] ??
+            (jsonResponse[ResponseKeys.kTitle] ?? '')
+        : '';
+    final status = (jsonResponse is Map)
+        ? jsonResponse[ResponseKeys.kStatus] ?? response.statusCode
+        : response.statusCode;
+    final data =
+        (jsonResponse is Map) ? jsonResponse[ResponseKeys.kData] : null;
     if (response.statusCode >= 200 && response.statusCode < 299) {
-      return HttpResponse(status: status, errMessage: message, data: data, mainResponse: jsonResponse);
+      return HttpResponse(
+          status: status,
+          errMessage: message,
+          data: data,
+          mainResponse: jsonResponse);
     } else {
-      var errMessage = jsonResponse[ResponseKeys.kMessage] ?? (jsonResponse[ResponseKeys.kTitle] ?? '');
-      return HttpResponse(status: status, errMessage: errMessage, mainResponse: jsonResponse);
+      var errMessage = jsonResponse[ResponseKeys.kMessage] ??
+          (jsonResponse[ResponseKeys.kTitle] ?? '');
+      return HttpResponse(
+          status: status, errMessage: errMessage, mainResponse: jsonResponse);
     }
   }
 
-  Future<HttpResponse> _handleDioNetworkError({DioError error, ApiType apiType}) async {
+  Future<HttpResponse> _handleDioNetworkError(
+      {DioError error, ApiType apiType}) async {
     Logger().v("Error Details :: ${error.message}");
 
     if ((error.response == null) || (error.response.data == null)) {
-      String errMessage = Translations.of(NavigationService().context).msgSomethingWrong;
+      String errMessage =
+          Translations.of(NavigationService().context).msgSomethingWrong;
       return HttpResponse(
         status: 500,
         errMessage: errMessage,
@@ -68,7 +81,9 @@ class ApiProvider {
       dynamic jsonResponse = getErrorData(error);
       if (jsonResponse is Map) {
         final status = jsonResponse[ResponseKeys.kStatus] ?? 400;
-        String errMessage = jsonResponse[ResponseKeys.kTitle] ?? (jsonResponse[ResponseKeys.kMessage] ?? Translations.of(NavigationService().context).msgSomethingWrong);
+        String errMessage = jsonResponse[ResponseKeys.kTitle] ??
+            (jsonResponse[ResponseKeys.kMessage] ??
+                Translations.of(NavigationService().context).msgSomethingWrong);
         return HttpResponse(
           status: status,
           errMessage: errMessage,
@@ -76,7 +91,8 @@ class ApiProvider {
       } else {
         return HttpResponse(
           status: 500,
-          errMessage: Translations.of(NavigationService().context).msgSomethingWrong,
+          errMessage:
+              Translations.of(NavigationService().context).msgSomethingWrong,
         );
       }
     }
@@ -91,16 +107,22 @@ class ApiProvider {
     return null;
   }
 
-  Future<HttpResponse> getRequest(ApiType apiType, {Map<String, String> params, String urlParam}) async {
+  Future<HttpResponse> getRequest(ApiType apiType,
+      {Map<String, String> params, String urlParam}) async {
     if (!Reachability().isInterNetAvaialble()) {
-      return HttpResponse(status: 101, errMessage: Translations.of(NavigationService().context).msgInternetMessage);
+      return HttpResponse(
+          status: 101,
+          errMessage:
+              Translations.of(NavigationService().context).msgInternetMessage);
     }
 
-    final requestFinal = ApiConstant.requestParamsForSync(apiType, params: params, urlParams: urlParam);
+    final requestFinal = ApiConstant.requestParamsForSync(apiType,
+        params: params, urlParams: urlParam);
 
     final option = Options(headers: requestFinal.item2);
     try {
-      final response = await this.dio.get(requestFinal.item1, queryParameters: requestFinal.item3, options: option);
+      final response = await this.dio.get(requestFinal.item1,
+          queryParameters: requestFinal.item3, options: option);
       return _handleNetworkSuccess(response: response);
     } on DioError catch (error) {
       final result = await this._handleDioNetworkError(error: error);
@@ -111,16 +133,24 @@ class ApiProvider {
     }
   }
 
-  Future<HttpResponse> postRequest(ApiType apiType, {Map<String, dynamic> params, String urlParams}) async {
+  Future<HttpResponse> postRequest(ApiType apiType,
+      {Map<String, dynamic> params, String urlParams}) async {
     if (!Reachability().isInterNetAvaialble()) {
-      return HttpResponse(status: 101, errMessage: Translations.of(NavigationService().context).msgInternetMessage);
+      return HttpResponse(
+          status: 101,
+          errMessage:
+              Translations.of(NavigationService().context).msgInternetMessage);
     }
 
-    final requestFinal = ApiConstant.requestParamsForSync(apiType, params: params, urlParams: urlParams);
+    final requestFinal = ApiConstant.requestParamsForSync(apiType,
+        params: params, urlParams: urlParams);
     final option = Options(headers: requestFinal.item2);
     this.lastRequestToken = CancelToken();
     try {
-      final response = await this.dio.post(requestFinal.item1, data: json.encode(requestFinal.item3), options: option, cancelToken: this.lastRequestToken);
+      final response = await this.dio.post(requestFinal.item1,
+          data: json.encode(requestFinal.item3),
+          options: option,
+          cancelToken: this.lastRequestToken);
       return this._handleNetworkSuccess(response: response);
     } on DioError catch (error) {
       final result = await this._handleDioNetworkError(error: error);
@@ -131,29 +161,42 @@ class ApiProvider {
     }
   }
 
-  Future<HttpResponse> deleteRequest(ApiType apiType, {Map<String, dynamic> params, String urlParams}) async {
+  Future<HttpResponse> deleteRequest(ApiType apiType,
+      {Map<String, dynamic> params, String urlParams}) async {
     if (!Reachability().isInterNetAvaialble()) {
-      return HttpResponse(status: 101, errMessage: Translations.of(NavigationService().context).msgInternetMessage);
+      return HttpResponse(
+          status: 101,
+          errMessage:
+              Translations.of(NavigationService().context).msgInternetMessage);
     }
 
-    final requestFinal = ApiConstant.requestParamsForSync(apiType, params: params, urlParams: urlParams);
+    final requestFinal = ApiConstant.requestParamsForSync(apiType,
+        params: params, urlParams: urlParams);
     final option = Options(headers: requestFinal.item2);
     this.lastRequestToken = CancelToken();
     try {
-      final response = await this.dio.delete(requestFinal.item1, data: json.encode(requestFinal.item3), options: option, cancelToken: this.lastRequestToken);
+      final response = await this.dio.delete(requestFinal.item1,
+          data: json.encode(requestFinal.item3),
+          options: option,
+          cancelToken: this.lastRequestToken);
       return this._handleNetworkSuccess(response: response);
     } on DioError catch (error) {
       final result = await this._handleDioNetworkError(error: error);
       if (result.failDueToToken ?? false) {
-        return this.deleteRequest(apiType, params: params, urlParams: urlParams);
+        return this
+            .deleteRequest(apiType, params: params, urlParams: urlParams);
       }
       return result;
     }
   }
 
-  Future<HttpResponse> putRequest(ApiType apiType, {Map<String, dynamic> params, String urlParam}) async {
+  Future<HttpResponse> putRequest(ApiType apiType,
+      {Map<String, dynamic> params, String urlParam}) async {
     if (!Reachability().isInterNetAvaialble()) {
-      return HttpResponse(status: 101, errMessage: Translations.of(NavigationService().context).msgInternetMessage);
+      return HttpResponse(
+          status: 101,
+          errMessage:
+              Translations.of(NavigationService().context).msgInternetMessage);
     }
 
     final requestFinal = ApiConstant.requestParamsForSync(
@@ -164,7 +207,10 @@ class ApiProvider {
     final option = Options(headers: requestFinal.item2);
     this.lastRequestToken = CancelToken();
     try {
-      final response = await this.dio.put(requestFinal.item1, data: json.encode(requestFinal.item3), options: option, cancelToken: this.lastRequestToken);
+      final response = await this.dio.put(requestFinal.item1,
+          data: json.encode(requestFinal.item3),
+          options: option,
+          cancelToken: this.lastRequestToken);
       return this._handleNetworkSuccess(response: response);
     } on DioError catch (error) {
       final result = await this._handleDioNetworkError(error: error);
@@ -178,22 +224,30 @@ class ApiProvider {
     }
   }
 
-  Future<HttpResponse> putFormDataRequest(ApiType apiType, {Map<String, dynamic> params, List<AppMultiPartFile> arrFile = const [], String urlParam}) async {
+  Future<HttpResponse> putFormDataRequest(ApiType apiType,
+      {Map<String, dynamic> params,
+      List<AppMultiPartFile> arrFile = const [],
+      String urlParam}) async {
     if (!Reachability().isInterNetAvaialble()) {
-      return HttpResponse(status: 101, errMessage: Translations.of(NavigationService().context).msgInternetMessage);
+      return HttpResponse(
+          status: 101,
+          errMessage:
+              Translations.of(NavigationService().context).msgInternetMessage);
     }
 
-    final requestFinal = ApiConstant.requestParamsForSync(apiType, params: params, arrFile: arrFile, isFormDataApi: true);
+    final requestFinal = ApiConstant.requestParamsForSync(apiType,
+        params: params, arrFile: arrFile, isFormDataApi: true);
 
     // Create form data Request
     FormData formData = new FormData.fromMap(Map<String, dynamic>());
 
-    MultipartFile mFile = MultipartFile.fromBytes(utf8.encode(json.encode(requestFinal.item3)),
-        contentType: MediaType(
-          'application',
-          'json',
-          {'charset': 'utf-8'},
-        ));
+    MultipartFile mFile =
+        MultipartFile.fromBytes(utf8.encode(json.encode(requestFinal.item3)),
+            contentType: MediaType(
+              'application',
+              'json',
+              {'charset': 'utf-8'},
+            ));
     formData.files.add(MapEntry('requestDTO', mFile));
 
     /* Adding File Content */
@@ -209,7 +263,10 @@ class ApiProvider {
           );
           formData.files.add(MapEntry(partFile.key, mFile));
         } else {
-          MultipartFile mFile = await MultipartFile.fromFile(file.path, filename: filename, contentType: MediaType(mineType.split("/").first, mineType.split("/").last));
+          MultipartFile mFile = await MultipartFile.fromFile(file.path,
+              filename: filename,
+              contentType: MediaType(
+                  mineType.split("/").first, mineType.split("/").last));
           formData.files.add(MapEntry(partFile.key, mFile));
         }
       }
@@ -217,7 +274,11 @@ class ApiProvider {
 
     final option = Options(headers: requestFinal.item2);
     try {
-      final response = await this.dio.put(requestFinal.item1, data: formData, options: option, onSendProgress: (sent, total) => Logger().v("uploadFile ${sent / total}"));
+      final response = await this.dio.put(requestFinal.item1,
+          data: formData,
+          options: option,
+          onSendProgress: (sent, total) =>
+              Logger().v("uploadFile ${sent / total}"));
       return this._handleNetworkSuccess(response: response);
     } on DioError catch (error) {
       final result = await this._handleDioNetworkError(error: error);
@@ -231,13 +292,20 @@ class ApiProvider {
     }
   }
 
-  Future<HttpResponse> uploadRequest(ApiType apiType, {Map<String, dynamic> params, List<AppMultiPartFile> arrFile, String urlParam}) async {
+  Future<HttpResponse> uploadRequest(ApiType apiType,
+      {Map<String, dynamic> params,
+      List<AppMultiPartFile> arrFile,
+      String urlParam}) async {
     if (!Reachability().isInterNetAvaialble()) {
-      final httpResonse = HttpResponse(status: 101, errMessage: Translations.of(NavigationService().context).msgInternetMessage);
+      final httpResonse = HttpResponse(
+          status: 101,
+          errMessage:
+              Translations.of(NavigationService().context).msgInternetMessage);
       return httpResonse;
     }
 
-    final requestFinal = ApiConstant.requestParamsForSync(apiType, params: params, arrFile: arrFile ?? List<AppMultiPartFile>());
+    final requestFinal = ApiConstant.requestParamsForSync(apiType,
+        params: params, arrFile: arrFile ?? List<AppMultiPartFile>());
 
     // Create form data Request
     FormData formData = new FormData.fromMap(requestFinal.item3);
@@ -255,7 +323,10 @@ class ApiProvider {
           );
           formData.files.add(MapEntry(partFile.key, mFile));
         } else {
-          MultipartFile mFile = await MultipartFile.fromFile(file.path, filename: filename, contentType: MediaType(mineType.split("/").first, mineType.split("/").last));
+          MultipartFile mFile = await MultipartFile.fromFile(file.path,
+              filename: filename,
+              contentType: MediaType(
+                  mineType.split("/").first, mineType.split("/").last));
           formData.files.add(MapEntry(partFile.key, mFile));
         }
       }
@@ -265,12 +336,17 @@ class ApiProvider {
     final option = Options(headers: requestFinal.item2);
 
     try {
-      final response = await this.dio.post(requestFinal.item1, data: formData, options: option, onSendProgress: (sent, total) => Logger().v("uploadFile ${sent / total}"));
+      final response = await this.dio.post(requestFinal.item1,
+          data: formData,
+          options: option,
+          onSendProgress: (sent, total) =>
+              Logger().v("uploadFile ${sent / total}"));
       return this._handleNetworkSuccess(response: response);
     } on DioError catch (error) {
       final result = await this._handleDioNetworkError(error: error);
       if (result.failDueToToken ?? false) {
-        return this.uploadRequest(apiType, params: params, arrFile: arrFile, urlParam: urlParam);
+        return this.uploadRequest(apiType,
+            params: params, arrFile: arrFile, urlParam: urlParam);
       }
       return result;
     }
@@ -278,38 +354,56 @@ class ApiProvider {
 }
 
 extension WallsApiProvider on ApiProvider {
-  Future<WallsResponse> wallsApi({WallsRequest request, ApiType apiType}) async {
-    final HttpResponse response = await this.getRequest(apiType,  params: request.toJson());
+  Future<WallsResponse> wallsApi(
+      {WallsRequest request, ApiType apiType}) async {
+    final HttpResponse response =
+        await this.getRequest(apiType, params: request.toJson());
     List<WallsModel> wallpaperList;
     if (response.status == 200) {
       wallpaperList = WallsModel.createFromList(response.mainResponse);
     }
-    return WallsResponse(status: response.status, message: response.errMessage, data: wallpaperList);
+    return WallsResponse(
+        status: response.status,
+        message: response.errMessage,
+        data: wallpaperList);
   }
 
-  Future<CategoryListResponse> getCategoryListApi({CategoryListRequest request}) async {
-    final HttpResponse response = await this.getRequest(ApiType.categories, params: request.toJson());
+  Future<CategoryListResponse> getCategoryListApi(
+      {CategoryListRequest request}) async {
+    final HttpResponse response =
+        await this.getRequest(ApiType.categories, params: request.toJson());
     List<CategoryListModel> categoryList;
     if (response.status == 200) {
       categoryList = CategoryListModel.createFromList(response.mainResponse);
     }
-    return CategoryListResponse(status: response.status, message: response.errMessage, data: categoryList);
+    return CategoryListResponse(
+        status: response.status,
+        message: response.errMessage,
+        data: categoryList);
   }
 
   Future<WallsResponse> categoryWiseWallsApi({WallsRequest request}) async {
-    final HttpResponse response = await this.getRequest(ApiType.categoryWiseWalls, params: request.toJson());
+    final HttpResponse response = await this
+        .getRequest(ApiType.categoryWiseWalls, params: request.toJson());
     List<WallsModel> wallpaperList;
     if (response.status == 200) {
       wallpaperList = WallsModel.createFromList(response.mainResponse);
     }
-    return WallsResponse(status: response.status, message: response.errMessage, data: wallpaperList);
+    return WallsResponse(
+        status: response.status,
+        message: response.errMessage,
+        data: wallpaperList);
   }
-  Future<RectangleWallResponse> rectangleWallApi({RectangleWallRequest request}) async {
-    final HttpResponse response = await this.getRequest(ApiType.rectangleWallpaper, params: request.toJson());
-  RectangleWallPaper wallPaper;
+
+  Future<RectangleWallResponse> rectangleWallApi(
+      {RectangleWallRequest request}) async {
+    final HttpResponse response = await this
+        .getRequest(ApiType.rectangleWallpaper, params: request.toJson());
+    RectangleWallPaper wallPaper;
     if (response.status == 200) {
       wallPaper = RectangleWallPaper.fromJson(response.mainResponse);
     }
-    return RectangleWallResponse(status: response.status, message: response.errMessage, data: wallPaper);
+    return RectangleWallResponse(
+        status: response.status, message: response.errMessage, data: wallPaper);
   }
 }
